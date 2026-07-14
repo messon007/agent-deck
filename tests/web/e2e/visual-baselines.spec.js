@@ -31,13 +31,19 @@ test.describe('visual baselines', () => {
   })
 
   test('home: dark theme', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('theme', 'dark'))
     await page.goto('/')
     await waitForAppMount(page)
-    await page.evaluate(() => {
-      document.documentElement.dataset.theme = 'dark'
-    })
     await page.waitForTimeout(300)
     await expect(page).toHaveScreenshot('home-dark.png', { fullPage: false })
+  })
+
+  test('home: light theme', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('theme', 'light'))
+    await page.goto('/')
+    await waitForAppMount(page)
+    await page.waitForTimeout(300)
+    await expect(page).toHaveScreenshot('home-light.png', { fullPage: false })
   })
 
   test('home: empty state (after deleting all sessions via web)', async ({
