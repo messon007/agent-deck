@@ -3,6 +3,7 @@
 // Preact components import these and read .value reactively.
 import { signal } from '@preact/signals'
 import { apiFetch } from './api.js'
+import { normalizeThemePreference, resolveTheme } from './theme.js'
 
 // Session data from SSE snapshot
 export const sessionsSignal = signal([])
@@ -17,9 +18,18 @@ export const selectedIdSignal = signal(null)
 export const connectionSignal = signal('connecting')
 
 // Theme preference: 'light' | 'dark' | 'system'
-export const themeSignal = signal(
-  localStorage.getItem('theme') || 'system'
-)
+function initialThemePreference() {
+  try { return normalizeThemePreference(localStorage.getItem('theme')) } catch (_) { return 'system' }
+}
+function initialResolvedTheme() {
+  if (typeof document !== 'undefined' && document.documentElement.dataset.theme) {
+    return document.documentElement.dataset.theme
+  }
+  const prefersDark = typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
+  return resolveTheme(initialThemePreference(), prefersDark)
+}
+export const themeSignal = signal(initialThemePreference())
+export const resolvedThemeSignal = signal(initialResolvedTheme())
 
 // Settings from GET /api/settings
 export const settingsSignal = signal(null)

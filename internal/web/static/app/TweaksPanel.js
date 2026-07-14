@@ -2,8 +2,10 @@
 // Slides in over the bottom-right corner. Close with × or `?`.
 import { html } from 'htm/preact'
 import { Icon, ICONS } from './icons.js'
+import { themeSignal } from './state.js'
+import { TERMINAL_FONT_OPTIONS } from './theme.js'
 import {
-  tweaksOpenSignal, accentSignal, densitySignal, railSignal,
+  tweaksOpenSignal, accentSignal, densitySignal, terminalFontSignal, railSignal,
 } from './uiState.js'
 
 const SWATCHES = [
@@ -16,7 +18,9 @@ const SWATCHES = [
 export function TweaksPanel() {
   if (!tweaksOpenSignal.value) return null
   const accent = accentSignal.value
+  const theme = themeSignal.value
   const density = densitySignal.value
+  const terminalFont = terminalFontSignal.value
   const rail = railSignal.value
   const close = () => (tweaksOpenSignal.value = false)
 
@@ -30,6 +34,19 @@ export function TweaksPanel() {
         </button>
       </div>
       <div class="tb">
+        <div>
+          <label>THEME</label>
+          <div class="seg-row theme-options" role="group" aria-label="Theme preference">
+            ${['system','light','dark'].map(t => html`
+              <button key=${t}
+                      type="button"
+                      data-testid=${`tweaks-theme-${t}`}
+                      aria-pressed=${theme === t}
+                      class=${`seg-btn ${theme === t ? 'on' : ''}`}
+                      onClick=${() => (themeSignal.value = t)}>${t}</button>
+            `)}
+          </div>
+        </div>
         <div>
           <label>ACCENT</label>
           <div class="swatch-row">
@@ -52,6 +69,18 @@ export function TweaksPanel() {
                       onClick=${() => (densitySignal.value = d)}>${d}</button>
             `)}
           </div>
+        </div>
+        <div>
+          <label for="terminal-font-select">TERMINAL FONT</label>
+          <select id="terminal-font-select"
+                  class="tweaks-select"
+                  data-testid="tweaks-terminal-font"
+                  value=${terminalFont}
+                  onChange=${event => (terminalFontSignal.value = event.currentTarget.value)}>
+            ${TERMINAL_FONT_OPTIONS.map(option => html`
+              <option key=${option.id} value=${option.id}>${option.label}</option>
+            `)}
+          </select>
         </div>
         <div>
           <label>RIGHT RAIL</label>

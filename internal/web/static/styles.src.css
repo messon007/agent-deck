@@ -527,10 +527,10 @@ body {
 .terminal-shell {
   display: flex;
   flex-direction: column;
-  border: 1px solid #1d2d46;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #0a1220;
-  color: #d9e2ec;
+  background: var(--terminal-bg);
+  color: var(--terminal-fg);
   height: 100%;
   min-height: 100%;
   overflow: hidden;
@@ -538,11 +538,11 @@ body {
 }
 
 .terminal-session {
-  border-bottom: 1px solid #1d2d46;
+  border-bottom: 1px solid var(--border);
   padding: 8px 12px;
   font-size: 0.82rem;
-  color: #9bb1cc;
-  background: #0f1a2e;
+  color: var(--text-dim);
+  background: var(--panel-2);
 }
 
 .terminal-mode-banner {
@@ -560,7 +560,7 @@ body {
   min-height: 0;
   padding: 8px;
   overflow: hidden;
-  background: #0a1220;
+  background: var(--terminal-bg);
   touch-action: none;
   overscroll-behavior: contain;
 }
@@ -579,19 +579,19 @@ body {
   margin: 0;
   padding: 12px;
   overflow: auto;
-  background: #0a1220;
-  color: #d9e2ec;
-  font-family: "IBM Plex Mono", "Menlo", "Consolas", monospace;
+  background: var(--terminal-bg);
+  color: var(--terminal-fg);
+  font-family: var(--terminal-font-family);
   font-size: 0.9rem;
   line-height: 1.35;
   white-space: pre-wrap;
 }
 
 .terminal-events {
-  border-top: 1px solid #1d2d46;
+  border-top: 1px solid var(--border);
   padding: 8px 12px;
-  background: #101d34;
-  color: #90a4c1;
+  background: var(--panel-2);
+  color: var(--text-dim);
   font-size: 0.75rem;
   white-space: nowrap;
   overflow: hidden;

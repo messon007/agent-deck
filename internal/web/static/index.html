@@ -17,10 +17,20 @@
          override in styles.src.css — do NOT remove or reorder. -->
     <script>
       ;(function() {
-        var t = localStorage.getItem('theme')
-        if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark')
-        }
+        var preference = 'system'
+        try { preference = localStorage.getItem('theme') || 'system' } catch (_) {}
+        if (preference !== 'light' && preference !== 'dark' && preference !== 'system') preference = 'system'
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        var resolved = preference === 'system' ? (prefersDark ? 'dark' : 'light') : preference
+        var root = document.documentElement
+        root.dataset.theme = resolved
+        root.dataset.themePreference = preference
+        root.classList.toggle('dark', resolved === 'dark')
+        root.classList.toggle('light', resolved === 'light')
+        root.style.colorScheme = resolved
+        document.querySelector('meta[name="theme-color"]').setAttribute(
+          'content', resolved === 'dark' ? '#1a1b26' : '#f4f6f8'
+        )
       })()
     </script>
 
@@ -65,8 +75,11 @@
     <link rel="stylesheet" href="/static/styles.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-          rel="stylesheet" />
+    <!-- Optional Web fonts must not block the local UI when the machine is
+         offline or Google Fonts is unreachable. The print-media swap loads
+         them asynchronously; every family also has platform-native fallbacks. -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Source+Code+Pro:wght@400;500;600&family=Ubuntu+Mono:wght@400;700&display=swap"
+          rel="stylesheet" media="print" onload="this.media='all'" />
     <link rel="stylesheet" href="/static/app/design-tokens.css" />
     <link rel="stylesheet" href="/static/app/app.css" />
   </head>

@@ -204,7 +204,7 @@ export function CostDashboard() {
     const observer = new MutationObserver(() => {
       buildCharts()
     })
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] })
 
     return () => {
       cancelled = true

@@ -2,7 +2,10 @@
 // Ports createTerminalUI, connectWS, installTerminalTouchScroll from app.js
 import { html } from 'htm/preact'
 import { useEffect, useRef, useCallback, useState } from 'preact/hooks'
-import { selectedIdSignal, authTokenSignal, wsStateSignal, readOnlySignal } from './state.js'
+import { selectedIdSignal, authTokenSignal, wsStateSignal, readOnlySignal, resolvedThemeSignal } from './state.js'
+import { terminalTheme } from './theme.js'
+import { terminalFontFamily } from './theme.js'
+import { terminalFontSignal } from './uiState.js'
 import { apiFetch } from './api.js'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
@@ -71,6 +74,8 @@ export function TerminalPanel() {
   const containerRef = useRef(null)
   const ctxRef = useRef(null)  // { terminal, fitAddon, ws, resizeObserver, controller, decoder, reconnectTimer, reconnectAttempt, wsReconnectEnabled, terminalAttached }
   const sessionId = selectedIdSignal.value
+  const resolvedTheme = resolvedThemeSignal.value
+  const terminalFont = terminalFontSignal.value
   // #782: terminal-fatal errors (e.g. TMUX_SESSION_NOT_FOUND) render as a
   // banner overlay rather than a `[error:CODE]` line on every WS reconnect.
   // null when there's no fatal error; an object { code, message, hint }
@@ -105,6 +110,29 @@ export function TerminalPanel() {
     wsStateSignal.value = 'disconnected'
   }, [])
 
+  // xterm renders its own canvas, so CSS variables alone cannot recolor it.
+  // Updating options.theme preserves the live terminal, scrollback, and WS.
+  useEffect(() => {
+    const terminal = ctxRef.current?.terminal
+    if (terminal) terminal.options.theme = terminalTheme(resolvedTheme)
+  }, [resolvedTheme])
+
+  // Font changes affect character-cell geometry. Re-fit the existing xterm
+  // instance without reconnecting or dropping scrollback.
+  useEffect(() => {
+    const ctx = ctxRef.current
+    if (!ctx?.terminal) return undefined
+    ctx.terminal.options.fontFamily = terminalFontFamily(terminalFont)
+    const frame = requestAnimationFrame(() => {
+      if (!ctxRef.current || ctxRef.current !== ctx) return
+      ctx.fitAddon.fit()
+      if (ctx.ws?.readyState === WebSocket.OPEN && ctx.terminalAttached) {
+        ctx.ws.send(JSON.stringify({ type: 'resize', cols: ctx.terminal.cols, rows: ctx.terminal.rows }))
+      }
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [terminalFont])
+
   useEffect(() => {
     if (!containerRef.current || !sessionId) {
       cleanup()
@@ -133,14 +161,10 @@ export function TerminalPanel() {
       convertEol: false,
       cursorBlink: !mobile,
       disableStdin: false,
-      fontFamily: 'IBM Plex Mono, Menlo, Consolas, monospace',
+      fontFamily: terminalFontFamily(terminalFont),
       fontSize: 13,
       scrollback: 10000,
-      theme: {
-        background: '#0a1220',
-        foreground: '#d9e2ec',
-        cursor: '#9ecbff',
-      },
+      theme: terminalTheme(resolvedTheme),
     })
 
     const fitAddon = new FitAddon()
@@ -437,9 +461,9 @@ export function TerminalPanel() {
              style=${{
                position: 'absolute', inset: '12px 12px auto 12px',
                border: '1px solid rgba(247,118,142,0.4)',
-               background: 'rgba(22,22,30,0.95)',
+               background: 'var(--fatal-bg)',
                borderRadius: 'var(--radius-lg)',
-               boxShadow: '0 30px 60px -20px rgba(0,0,0,0.55)',
+               boxShadow: 'var(--shadow-4)',
                padding: '14px 16px',
              }}>
           <div style="display: flex; align-items: flex-start; gap: 12px;">

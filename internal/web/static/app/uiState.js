@@ -5,6 +5,7 @@
 // so a reload restores the user's chosen layout. Status filters and palette
 // open/close are session-scoped (don't persist).
 import { signal, effect } from '@preact/signals'
+import { normalizeTerminalFont } from './theme.js'
 
 function loadJSON(key, fallback) {
   try {
@@ -39,6 +40,12 @@ persist(accentSignal, 'agentdeck.accent')
 // Density (drives body[data-density]).
 export const densitySignal = signal(loadJSON('agentdeck.density', 'balanced'))
 persist(densitySignal, 'agentdeck.density')
+
+// Terminal font family (xterm canvas + fallback terminal output).
+export const terminalFontSignal = signal(
+  normalizeTerminalFont(loadJSON('agentdeck.terminalFont', 'jetbrains'))
+)
+persist(terminalFontSignal, 'agentdeck.terminalFont')
 
 // Right rail visible/hidden (drives body[data-rail] and grid-template-columns).
 export const railSignal = signal(loadJSON('agentdeck.rail', 'visible'))
@@ -77,7 +84,9 @@ effect(() => {
   document.documentElement.dataset.accent = accentSignal.value
   document.documentElement.dataset.density = densitySignal.value
   document.documentElement.dataset.rail = railSignal.value
+  document.documentElement.dataset.terminalFont = terminalFontSignal.value
   document.body.dataset.accent = accentSignal.value
   document.body.dataset.density = densitySignal.value
   document.body.dataset.rail = railSignal.value
+  document.body.dataset.terminalFont = terminalFontSignal.value
 })

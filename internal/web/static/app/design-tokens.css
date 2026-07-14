@@ -33,9 +33,9 @@
   --tn-orange:  #ff9e64;
 
   /* === Color palette: light-mode swatches (preserved from styles.src.css) === */
-  --tn-light-bg:    #e6e7ed;
-  --tn-light-panel: #d6d8df;
-  --tn-light-fg:    #363c4d;
+  --tn-light-bg:    #f4f6f8;
+  --tn-light-panel: #edf1f5;
+  --tn-light-fg:    #344054;
   --tn-light-blue:  #2959aa;
 
   /* === Colors: semantic surfaces (dark default; overridden in light mode below) === */
@@ -57,6 +57,20 @@
   /* === Colors: accent (default blue; swap via [data-accent]) === */
   --accent:      var(--tn-blue);
   --accent-soft: rgba(122, 162, 247, 0.14);
+  --accent-contrast: #0b0f1a;
+
+  /* === Theme-sensitive component colors === */
+  --terminal-bg:       #0b0f1a;
+  --terminal-fg:       #c0caf5;
+  --terminal-font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace;
+  --logo-bg:           #1a1b26;
+  --logo-line:         #414868;
+  --hover-bg:          rgba(255, 255, 255, 0.025);
+  --subtle-bg:         rgba(255, 255, 255, 0.02);
+  --switch-track:      rgba(255, 255, 255, 0.10);
+  --indicator-muted:   rgba(255, 255, 255, 0.14);
+  --overlay-bg:        rgba(0, 0, 0, 0.50);
+  --fatal-bg:          rgba(22, 22, 30, 0.96);
 
   /* === Colors: status + role aliases === */
   --status-running: var(--tn-green);
@@ -161,6 +175,7 @@
 
   /* === Layout: app-shell dimensions (from bundle) === */
   --topbar-h:    44px;
+  --section-head-h: 50px;
   --footer-h:    26px;
   --sidebar-w:   300px;
   --rightrail-w: 340px;
@@ -174,30 +189,73 @@
 :root[data-density="compact"]     { --density-row: 26px; --density-gap: 4px; }
 :root[data-density="comfortable"] { --density-row: 36px; --density-gap: 10px; }
 
+:root[data-terminal-font="jetbrains"] { --terminal-font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace; }
+:root[data-terminal-font="ibm"]       { --terminal-font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace; }
+:root[data-terminal-font="fira"]      { --terminal-font-family: 'Fira Code', ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace; }
+:root[data-terminal-font="source"]    { --terminal-font-family: 'Source Code Pro', ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace; }
+:root[data-terminal-font="hasklug"]   { --terminal-font-family: 'Hasklug Nerd Font Mono', 'Hasklug Nerd Font', ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace; }
+:root[data-terminal-font="ubuntu"]    { --terminal-font-family: 'Ubuntu Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace; }
+:root[data-terminal-font="system"]    { --terminal-font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace; }
+
 /* Accent swap-outs — mirror bundle's `body[data-accent=…]` hooks. */
 :root[data-accent="blue"]   { --accent: var(--tn-blue);   --accent-soft: rgba(122, 162, 247, 0.14); }
 :root[data-accent="amber"]  { --accent: var(--tn-yellow); --accent-soft: rgba(224, 175, 104, 0.14); }
 :root[data-accent="green"]  { --accent: var(--tn-green);  --accent-soft: rgba(115, 218, 202, 0.14); }
 :root[data-accent="purple"] { --accent: var(--tn-purple); --accent-soft: rgba(187, 154, 247, 0.14); }
 
-/* Light mode — activated by :root[data-theme="light"] or :root.light. Only
- * semantic surfaces/text/accent are rebound; brand palette stays available. */
+/* Light mode — activated by :root[data-theme="light"] or :root.light. */
 :root[data-theme="light"],
 :root.light {
   --bg:        var(--tn-light-bg);
   --panel:     var(--tn-light-panel);
-  --panel-2:   #c8cad3;
+  --panel-2:   #e7ebf0;
   --card:      #ffffff;
-  --card-hi:   #f0f1f5;
-  --border:    rgba(54, 60, 77, 0.18);
-  --border-hi: rgba(54, 60, 77, 0.32);
+  --card-hi:   #f7f9fb;
+  --border:    rgba(52, 64, 84, 0.16);
+  --border-hi: rgba(52, 64, 84, 0.30);
 
   --text:     var(--tn-light-fg);
-  --text-hi:  #1c2030;
-  --text-dim: #5a6177;
-  --muted:    #5a6177;
-  --muted-2:  #7d8497;
+  --text-hi:  #101828;
+  --text-dim: #475467;
+  --muted:    #667085;
+  --muted-2:  #98a2b3;
 
-  --accent:      var(--tn-light-blue);
-  --accent-soft: rgba(41, 89, 170, 0.12);
+  /* Tokyo Night's pastel hues lose contrast on white; keep their semantic
+   * identity while using accessible light-theme values. */
+  --tn-blue:   #2959aa;
+  --tn-cyan:   #087e8b;
+  --tn-green:  #147d64;
+  --tn-lime:   #4f7a18;
+  --tn-yellow: #9a6700;
+  --tn-red:    #c73650;
+  --tn-purple: #7759b8;
+  --tn-orange: #b45309;
+
+  --accent-contrast: #ffffff;
+  --terminal-bg:     #ffffff;
+  --terminal-fg:     #263043;
+  --logo-bg:         #ffffff;
+  --logo-line:       #c7cdd7;
+  --hover-bg:        rgba(41, 89, 170, 0.055);
+  --subtle-bg:       rgba(52, 64, 84, 0.035);
+  --switch-track:    rgba(52, 64, 84, 0.14);
+  --indicator-muted: rgba(52, 64, 84, 0.20);
+  --overlay-bg:      rgba(16, 24, 40, 0.28);
+  --fatal-bg:        rgba(255, 255, 255, 0.97);
+
+  --shadow-1:     0 14px 32px -14px rgba(16, 24, 40, 0.24);
+  --shadow-2:     0 18px 42px -18px rgba(16, 24, 40, 0.26);
+  --shadow-3:     0 20px 50px -22px rgba(16, 24, 40, 0.28);
+  --shadow-4:     0 24px 54px -24px rgba(16, 24, 40, 0.30);
+  --shadow-5:     0 30px 70px -28px rgba(16, 24, 40, 0.32);
+  --shadow-modal: 0 30px 70px -28px rgba(16, 24, 40, 0.32), 0 0 0 1px var(--accent-soft);
+
+  --glow-running: 0 0 5px rgba(20, 125, 100, 0.40);
+  --glow-waiting: 0 0 5px rgba(154, 103, 0, 0.40);
+  --glow-error:   0 0 5px rgba(199, 54, 80, 0.40);
 }
+
+:root[data-theme="light"][data-accent="blue"]   { --accent-soft: rgba(41, 89, 170, 0.12); }
+:root[data-theme="light"][data-accent="amber"]  { --accent-soft: rgba(154, 103, 0, 0.12); }
+:root[data-theme="light"][data-accent="green"]  { --accent-soft: rgba(20, 125, 100, 0.12); }
+:root[data-theme="light"][data-accent="purple"] { --accent-soft: rgba(119, 89, 184, 0.12); }
