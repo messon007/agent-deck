@@ -7,7 +7,10 @@
 import { html } from 'htm/preact'
 import { Logo, Icon, ICONS } from './icons.js'
 import { menuModelSignal } from './dataModel.js'
-import { connectionSignal, profilesSignal, commandCenterSignal } from './state.js'
+import {
+  connectionSignal, profilesSignal, commandCenterSignal,
+  themeSignal, resolvedThemeSignal,
+} from './state.js'
 import {
   activeTabSignal, paletteOpenSignal, tweaksOpenSignal,
   railSignal, profileSignal,
@@ -31,6 +34,7 @@ export function Topbar() {
   const activeTab = activeTabSignal.value
   const conn = connectionSignal.value
   const rail = railSignal.value
+  const resolvedTheme = resolvedThemeSignal.value
   const { sessions } = menuModelSignal.value
   const sessionsBadge = sessions.filter(s => s.status === 'waiting' || s.status === 'error').length
   const pendingNeeds = sessions.reduce((n, s) => n + (s.pendingNeeds || 0), 0)
@@ -86,13 +90,30 @@ export function Topbar() {
           const current = profileSignal.value || p.current || list[0]
           return html`
             <span class="icon-btn"
-              style=${{ width: 'auto', padding: '0 8px', fontFamily: 'var(--mono)', fontSize: '11px', cursor: 'default' }}
+              style=${{ width: 'auto', padding: '0 6px', fontFamily: 'var(--mono)', fontSize: '11px', cursor: 'default' }}
               title="Active profile (bound at startup; not switchable from the web UI)">
               ${current}
             </span>
           `
         })()}
         <${ToastHistoryDrawerToggle}/>
+        <button
+          class="icon-btn theme-quick-toggle"
+          data-testid="theme-quick-toggle"
+          onClick=${() => (themeSignal.value = resolvedTheme === 'dark' ? 'light' : 'dark')}
+          title=${resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          aria-label=${resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}>
+          ${resolvedTheme === 'dark' ? html`
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/>
+            </svg>
+          ` : html`
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/>
+            </svg>
+          `}
+          <span>${resolvedTheme === 'dark' ? 'Dark' : 'Light'}</span>
+        </button>
         <button
           class=${`icon-btn ${rail === 'visible' ? 'active' : ''}`}
           onClick=${() => (railSignal.value = rail === 'visible' ? 'hidden' : 'visible')}

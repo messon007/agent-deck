@@ -1,8 +1,8 @@
 // e2e/tweaks-rail.spec.js — Tweaks panel + right rail configuration coverage.
 //
 // Exercises the appearance/layout surface that no other spec touches:
-//   - TweaksPanel (Topbar gear button): accent swatches, density seg buttons,
-//     right-rail visibility switch, close via ×/q/Esc.
+//   - TweaksPanel (Topbar gear button): theme, accent swatches, density seg
+//     buttons, right-rail visibility switch, close via ×/q/Esc.
 //   - RightRail: per-card panel toggles (rail-add picker) and the Overview
 //     card's seeded session fields.
 //   - Topbar `]` icon button as the pointer-driven rail toggle (the `]` KEY
@@ -39,6 +39,13 @@ async function openTweaks(page) {
   await expect(page.locator('[data-testid="tweaks-panel"]')).toBeVisible()
 }
 
+async function box(page, selector) {
+  return page.locator(selector).evaluate(element => {
+    const rect = element.getBoundingClientRect()
+    return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom }
+  })
+}
+
 const lsValue = (page, key) => page.evaluate(k => localStorage.getItem(k), key)
 
 test.describe('tweaks panel (all viewports)', () => {
@@ -51,11 +58,50 @@ test.describe('tweaks panel (all viewports)', () => {
   test('topbar gear opens the panel; × closes it', async ({ page }) => {
     await openTweaks(page)
     const panel = page.locator('[data-testid="tweaks-panel"]')
+    await expect(panel).toContainText('THEME')
     await expect(panel).toContainText('ACCENT')
     await expect(panel).toContainText('DENSITY')
+    await expect(panel).toContainText('TERMINAL FONT')
     await expect(panel).toContainText('RIGHT RAIL')
     await panel.locator('[data-testid="tweaks-close"]').click()
     await expect(panel).toHaveCount(0)
+  })
+
+  test('light/dark preference switches the full UI and persists across reload', async ({ page }) => {
+    await openTweaks(page)
+    await page.locator('[data-testid="tweaks-theme-light"]').click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+    await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'light')
+    await expect(page.locator('html')).not.toHaveClass(/\bdark\b/)
+    await expect(page.locator('[data-testid="tweaks-theme-light"]')).toHaveAttribute('aria-pressed', 'true')
+    expect(await lsValue(page, 'theme')).toBe('light')
+
+    const colors = await page.evaluate(() => ({
+      body: getComputedStyle(document.body).backgroundColor,
+      terminal: getComputedStyle(document.documentElement).getPropertyValue('--terminal-bg').trim(),
+    }))
+    expect(colors.body).toBe('rgb(244, 246, 248)')
+    expect(colors.terminal).toBe('#ffffff')
+
+    await page.reload()
+    await waitForTopbar(page)
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+
+    await page.locator('[data-testid="theme-quick-toggle"]').click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    expect(await lsValue(page, 'theme')).toBe('dark')
+  })
+
+  test('system preference follows the browser color scheme', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' })
+    await openTweaks(page)
+    await page.locator('[data-testid="tweaks-theme-system"]').click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+    await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'system')
+
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    await expect(page.locator('[data-testid="tweaks-theme-system"]')).toHaveAttribute('aria-pressed', 'true')
   })
 
   test('q and Esc both close the panel (closeAllModals)', async ({ page }) => {
@@ -104,6 +150,22 @@ test.describe('tweaks panel (all viewports)', () => {
     await openTweaks(page)
     await expect(page.locator('[data-testid="tweaks-density-compact"]')).toHaveClass(/\bon\b/)
   })
+
+  test('terminal font selection updates the UI token and persists', async ({ page }) => {
+    await openTweaks(page)
+    const select = page.locator('[data-testid="tweaks-terminal-font"]')
+    await select.selectOption('ibm')
+    await expect(page.locator('html')).toHaveAttribute('data-terminal-font', 'ibm')
+    expect(await lsValue(page, 'agentdeck.terminalFont')).toBe('"ibm"')
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement)
+      .getPropertyValue('--terminal-font-family'))).toContain('IBM Plex Mono')
+
+    await page.reload()
+    await waitForTopbar(page)
+    await expect(page.locator('html')).toHaveAttribute('data-terminal-font', 'ibm')
+    await openTweaks(page)
+    await expect(page.locator('[data-testid="tweaks-terminal-font"]')).toHaveValue('ibm')
+  })
 })
 
 test.describe('right rail (desktop/tablet)', () => {
@@ -114,6 +176,31 @@ test.describe('right rail (desktop/tablet)', () => {
 
   test.beforeEach(async ({ page, request }) => {
     await request.post('/__fixture/reset')
+  })
+
+  test('topbar and section borders align without covering status', async ({ page }) => {
+    await page.goto('/')
+    await waitForAppMount(page)
+
+    const topbar = await box(page, '.topbar')
+    const brand = await box(page, '.top-brand')
+    const sidebar = await box(page, '.sidebar')
+    const sideHead = await box(page, '.side-head')
+    const workHead = await box(page, '.work-head')
+    const railHead = await box(page, '.rail-head')
+    const topRight = await box(page, '.top-right')
+    const rightRail = await box(page, '.rightrail')
+    const status = await box(page, '.work-head .status-chip')
+
+    expect(brand.left).toBe(sidebar.left)
+    expect(brand.right).toBe(sidebar.right)
+    expect(topbar.bottom).toBe(sideHead.top)
+    expect(sideHead.bottom).toBe(workHead.bottom)
+    expect(workHead.bottom).toBe(railHead.bottom)
+    expect(topRight.left).toBe(rightRail.left)
+    expect(topRight.right).toBe(rightRail.right)
+    expect(status.top).toBeGreaterThanOrEqual(topbar.bottom)
+    expect(status.bottom).toBeLessThanOrEqual(workHead.bottom)
   })
 
   test('tweaks rail switch hides/shows the rail and persists', async ({ page }) => {

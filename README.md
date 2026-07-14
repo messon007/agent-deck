@@ -886,6 +886,12 @@ agent-deck web --token my-secret
 # then open: http://127.0.0.1:8420/?token=my-secret
 ```
 
+The web UI supports System, Light, and Dark appearance modes. Use the labeled
+theme button in the top bar for a quick light/dark switch, or open **Tweaks**
+to follow the operating-system theme and choose a terminal font. Appearance
+preferences persist in the browser and use platform-aware font fallbacks for
+macOS, Linux, and Windows browsers connected to Agent Deck through WSL.
+
 ## Documentation
 
 **Onboarding** — five-minute walkthroughs for new users:

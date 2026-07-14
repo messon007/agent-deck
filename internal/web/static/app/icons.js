@@ -5,9 +5,9 @@ import { html } from 'htm/preact'
 export function Logo() {
   return html`
     <svg width="28" height="18" viewBox="0 0 120 80" aria-hidden="true">
-      <rect fill="#1a1b26" width="120" height="80" rx="12" stroke="var(--border-hi)" stroke-width="1"/>
-      <line x1="40" y1="8" x2="40" y2="72" stroke="#414868" stroke-width="1.5"/>
-      <line x1="80" y1="8" x2="80" y2="72" stroke="#414868" stroke-width="1.5"/>
+      <rect fill="var(--logo-bg)" width="120" height="80" rx="12" stroke="var(--border-hi)" stroke-width="1"/>
+      <line x1="40" y1="8" x2="40" y2="72" stroke="var(--logo-line)" stroke-width="1.5"/>
+      <line x1="80" y1="8" x2="80" y2="72" stroke="var(--logo-line)" stroke-width="1.5"/>
       <circle cx="20" cy="40" r="11" fill="var(--tn-green)"/>
       <circle cx="60" cy="40" r="11" fill="var(--tn-yellow)"/>
       <circle cx="100" cy="40" r="11" fill="var(--tn-muted-2)"/>

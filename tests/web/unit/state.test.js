@@ -53,6 +53,7 @@ describe('module signals export', () => {
       'selectedIdSignal',
       'connectionSignal',
       'themeSignal',
+      'resolvedThemeSignal',
       'settingsSignal',
       'authTokenSignal',
       'sessionCostsSignal',

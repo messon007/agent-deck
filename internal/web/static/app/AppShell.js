@@ -30,6 +30,7 @@ import {
   selectedIdSignal, createSessionDialogSignal, confirmDialogSignal,
   groupNameDialogSignal, mutationsEnabledSignal, infoDrawerOpenSignal,
   profilesSignal, systemStatsSignal,
+  themeSignal, resolvedThemeSignal,
   toolFilterSignal, visibleToolsSignal, toolFilterFallbackSignal,
   hiddenToolsSignal, pickerToolsSignal,
 } from './state.js'
@@ -47,6 +48,7 @@ import { SettingsPanel } from './SettingsPanel.js'
 import { KeyboardShortcuts } from './KeyboardShortcuts.js'
 import { apiFetch } from './api.js'
 import { shortcutsOverlaySignal } from './state.js'
+import { applyThemeToDocument } from './theme.js'
 
 function WorkHead() {
   const { sessions } = menuModelSignal.value
@@ -119,10 +121,31 @@ function Panes({ tab }) {
 
 export function AppShell() {
   const activeTab = activeTabSignal.value
+  const themePreference = themeSignal.value
   const showCreateSession = createSessionDialogSignal.value
   const confirmData = confirmDialogSignal.value
   const groupNameData = groupNameDialogSignal.value
   const drawerOpen = infoDrawerOpenSignal.value
+
+  // Keep Tailwind's dark class, semantic design tokens, browser chrome, and
+  // concrete-color consumers (xterm/charts) on one resolved theme. In system
+  // mode this listener also follows OS changes without a reload.
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const sync = () => {
+      const resolved = applyThemeToDocument(themePreference, media.matches)
+      resolvedThemeSignal.value = resolved
+      try { localStorage.setItem('theme', themePreference) } catch (_) { /* private mode */ }
+    }
+    sync()
+    if (themePreference !== 'system') return undefined
+    if (media.addEventListener) media.addEventListener('change', sync)
+    else media.addListener(sync)
+    return () => {
+      if (media.removeEventListener) media.removeEventListener('change', sync)
+      else media.removeListener(sync)
+    }
+  }, [themePreference])
 
   // Hide the vanilla .app div from the legacy boot path (kept for back-compat
   // until we delete it).
