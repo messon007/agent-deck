@@ -3075,8 +3075,65 @@ func TestWrapRespawnCommand_UsesBashRegardlessOfShellEnv(t *testing.T) {
 
 	wrapped, err := wrapRespawnCommand("claude --session-id abc")
 	require.NoError(t, err)
-	require.Contains(t, wrapped, " -lc ")
+	require.Contains(t, wrapped, " -c ")
+	require.NotContains(t, wrapped, " -lc ")
 	require.Contains(t, wrapped, "claude --session-id abc")
+}
+
+func TestWrapRespawnCommand_PreservesInheritedPath(t *testing.T) {
+	binDir := t.TempDir()
+	marker := filepath.Join(t.TempDir(), "codex-ran")
+	stub := filepath.Join(binDir, "codex")
+	require.NoError(t, os.WriteFile(stub, []byte("#!/bin/sh\nprintf ran > \"$1\"\n"), 0o755))
+
+	// A login shell would source this file and discard binDir from PATH. The
+	// respawn wrapper must behave like the initial Start path and keep PATH.
+	home := t.TempDir()
+	require.NoError(t, os.WriteFile(
+		filepath.Join(home, ".bash_profile"),
+		[]byte("export PATH=/usr/bin:/bin\n"),
+		0o600,
+	))
+	t.Setenv("HOME", home)
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	wrapped, err := wrapRespawnCommand(fmt.Sprintf("codex %q", marker))
+	require.NoError(t, err)
+	run := exec.Command("sh", "-c", wrapped)
+	run.Env = os.Environ()
+	out, err := run.CombinedOutput()
+	require.NoError(t, err, "wrapped command failed: %s", string(out))
+	require.FileExists(t, marker)
+}
+
+func TestRespawnPane_PreservesInheritedPath(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("tmux not available")
+	}
+
+	binDir := t.TempDir()
+	stub := filepath.Join(binDir, "codex")
+	require.NoError(t, os.Symlink("/bin/sleep", stub))
+
+	home := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(home, ".bash_profile"), []byte("export PATH=/usr/bin:/bin\n"), 0o600))
+	t.Setenv("HOME", home)
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	socket := fmt.Sprintf("agent-deck-respawn-path-%d", time.Now().UnixNano())
+	session := NewSession("respawn-path", t.TempDir())
+	session.SocketName = socket
+	session.RunCommandAsInitialProcess = true
+	require.NoError(t, session.Start("codex 10"))
+	t.Cleanup(func() {
+		_ = session.Kill()
+		_ = exec.Command("tmux", "-L", socket, "kill-server").Run()
+	})
+
+	require.True(t, session.Exists(), "initial bash -c start should find the PATH stub")
+	require.NoError(t, session.RespawnPane("codex 10"))
+	require.True(t, session.Exists(), "respawned session should remain alive")
+	require.False(t, session.IsPaneDead(), "respawned pane should not exit immediately")
 }
 
 func TestWrapRespawnCommand_PreservesQuotedPayloads(t *testing.T) {
@@ -3104,7 +3161,8 @@ func TestWrapRespawnCommand_PreservesQuotedPayloads(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			wrapped, err := wrapRespawnCommand(tc.cmd)
 			require.NoError(t, err)
-			require.Contains(t, wrapped, " -lc ")
+			require.Contains(t, wrapped, " -c ")
+			require.NotContains(t, wrapped, " -lc ")
 
 			run := exec.Command("sh", "-c", wrapped)
 			out, err := run.CombinedOutput()
