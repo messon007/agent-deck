@@ -119,6 +119,24 @@ func buildWebServer(profile string, args []string, menuData web.MenuDataLoader, 
 	return server, nil
 }
 
+// selectWebMenuData chooses the menu source used by the web server.
+//
+// Headless mode has no TUI event loop to publish fresh in-memory snapshots,
+// so storage must remain the live source of truth. Wrapping the fallback in a
+// MemoryMenuData here would cache the first snapshot indefinitely and hide
+// sessions added later by a separate `agent-deck` CLI process.
+//
+// With the TUI enabled, its event loop continuously publishes snapshots, so
+// the in-memory store remains the appropriate low-latency source.
+func selectWebMenuData(headless bool, fallback web.MenuDataLoader) (web.MenuDataLoader, *web.MemoryMenuData) {
+	if headless {
+		return fallback, nil
+	}
+
+	live := web.NewMemoryMenuData(fallback)
+	return live, live
+}
+
 // resolveMutationsEnabled applies precedence: --read-only forces mutations off;
 // otherwise the value comes from config.toml `[web].mutations_enabled`, which
 // defaults to true when unset.
