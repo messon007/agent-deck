@@ -68,8 +68,9 @@
          Order matters:
            xterm.css         → terminal vendor styles (preserved)
            styles.css        → compiled Tailwind v4 output (preserved for legacy components)
-           design-tokens.css → bundle's CSS custom properties (PR-B redesign)
-           app.css           → bundle's component-class rules (PR-B redesign)
+           design-tokens.css → upstream CSS custom properties
+           app.css           → upstream component-class rules
+           appearance-*.css  → isolated Studio theme/font overrides
          design-tokens.css must precede app.css so component rules can resolve `var(--*)`. -->
     <link rel="stylesheet" href="/static/vendor/xterm.css" />
     <link rel="stylesheet" href="/static/styles.css" />
@@ -82,6 +83,9 @@
           rel="stylesheet" media="print" onload="this.media='all'" />
     <link rel="stylesheet" href="/static/app/design-tokens.css" />
     <link rel="stylesheet" href="/static/app/app.css" />
+    <link rel="stylesheet" href="/static/app/appearance-theme.css" />
+    <link rel="stylesheet" href="/static/app/appearance-fonts.css" />
+    <link rel="stylesheet" href="/static/app/appearance-overrides.css" />
   </head>
   <body class="bg-gray-100 dark:bg-tn-bg text-gray-900 dark:text-tn-fg min-h-screen"
         data-accent="blue" data-density="balanced" data-rail="visible">

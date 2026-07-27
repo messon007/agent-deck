@@ -1,0 +1,184 @@
+/*
+ * Agent Deck Studio appearance extension: component bridge.
+ *
+ * These late-cascade rules connect the independent theme/font tokens to the
+ * upstream components. They intentionally avoid editing app.css,
+ * design-tokens.css, and styles.src.css.
+ */
+
+:root {
+  --section-head-h: 50px;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--rightrail-w);
+  align-items: stretch;
+  height: var(--topbar-h);
+  min-height: 0;
+  padding: 0;
+  gap: 0;
+}
+
+.top-right {
+  gap: 4px;
+  padding: 0 8px;
+  min-width: 0;
+}
+
+.theme-quick-toggle {
+  display: inline-flex;
+  width: auto;
+  padding: 0 6px;
+  gap: 5px;
+  border-color: var(--border);
+  background: var(--card);
+  font-family: var(--mono);
+  font-size: 10.5px;
+}
+
+.conn-pill {
+  padding: 3px 8px;
+}
+
+.side-head,
+.rail-head {
+  height: var(--section-head-h);
+  padding-top: 0;
+  padding-bottom: 0;
+  flex: 0 0 var(--section-head-h);
+}
+
+.work-head {
+  height: var(--section-head-h);
+  min-height: var(--section-head-h);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.sess:hover {
+  background: var(--hover-bg);
+}
+
+.btn.primary,
+.check-row.on .cbox {
+  color: var(--accent-contrast);
+}
+
+.term-frame {
+  background: var(--terminal-bg);
+  box-shadow: var(--shadow-3);
+}
+
+.tdots i {
+  background: var(--indicator-muted);
+}
+
+.term-input {
+  background: var(--terminal-bg);
+}
+
+.attach,
+.msg {
+  background: var(--subtle-bg);
+}
+
+.attach .sw {
+  background: var(--switch-track);
+}
+
+.overlay {
+  background: var(--overlay-bg);
+}
+
+.dialog {
+  box-shadow: var(--shadow-modal);
+}
+
+.cmdk {
+  box-shadow: var(--shadow-5);
+}
+
+.tweaks {
+  box-shadow: var(--shadow-4);
+}
+
+.toast {
+  box-shadow: var(--shadow-1);
+}
+
+.tweaks-select {
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+
+.tweaks-select:focus {
+  outline: 0;
+  border-color: var(--accent);
+}
+
+.theme-options {
+  width: 100%;
+}
+
+.theme-options .seg-btn {
+  flex: 1;
+  text-transform: capitalize;
+}
+
+/* Legacy terminal shell is still available alongside the Preact xterm panel. */
+.terminal-shell {
+  border-color: var(--border);
+  background: var(--terminal-bg);
+  color: var(--terminal-fg);
+}
+
+.terminal-session {
+  border-bottom-color: var(--border);
+  color: var(--text-dim);
+  background: var(--panel-2);
+}
+
+.terminal-canvas {
+  background: var(--terminal-bg);
+}
+
+.terminal-fallback {
+  background: var(--terminal-bg);
+  color: var(--terminal-fg);
+}
+
+.terminal-events {
+  border-top-color: var(--border);
+  background: var(--panel-2);
+  color: var(--text-dim);
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .theme-quick-toggle {
+    width: 30px;
+    padding: 0;
+  }
+
+  .theme-quick-toggle span {
+    display: none;
+  }
+
+  .work-head {
+    height: auto;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    min-height: 0;
+  }
+}

@@ -1,0 +1,58 @@
+/*
+ * Agent Deck Studio appearance extension: terminal font selection.
+ *
+ * Font files are optional. The browser uses Google Fonts when available and
+ * otherwise walks the platform-aware local fallback list.
+ */
+
+:root {
+  --terminal-font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
+    'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas,
+    'Liberation Mono', 'DejaVu Sans Mono', monospace;
+}
+
+:root[data-terminal-font="jetbrains"] {
+  --terminal-font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
+    'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas,
+    'Liberation Mono', 'DejaVu Sans Mono', monospace;
+}
+
+:root[data-terminal-font="ibm"] {
+  --terminal-font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular',
+    'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas,
+    'Liberation Mono', 'DejaVu Sans Mono', monospace;
+}
+
+:root[data-terminal-font="fira"] {
+  --terminal-font-family: 'Fira Code', ui-monospace, 'SFMono-Regular',
+    'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas,
+    'Liberation Mono', 'DejaVu Sans Mono', monospace;
+}
+
+:root[data-terminal-font="source"] {
+  --terminal-font-family: 'Source Code Pro', ui-monospace, 'SFMono-Regular',
+    'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas,
+    'Liberation Mono', 'DejaVu Sans Mono', monospace;
+}
+
+:root[data-terminal-font="hasklug"] {
+  --terminal-font-family: 'Hasklug Nerd Font Mono', 'Hasklug Nerd Font',
+    ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Cascadia Mono', Menlo,
+    Monaco, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace;
+}
+
+:root[data-terminal-font="ubuntu"] {
+  --terminal-font-family: 'Ubuntu Mono', ui-monospace, 'SFMono-Regular',
+    'Cascadia Code', 'Cascadia Mono', Menlo, Monaco, Consolas,
+    'Liberation Mono', 'DejaVu Sans Mono', monospace;
+}
+
+:root[data-terminal-font="system"] {
+  --terminal-font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Code',
+    'Cascadia Mono', Menlo, Monaco, Consolas, 'Liberation Mono',
+    'DejaVu Sans Mono', monospace;
+}
+
+.terminal-fallback {
+  font-family: var(--terminal-font-family);
+}

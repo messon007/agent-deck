@@ -1,0 +1,98 @@
+/*
+ * Agent Deck Studio appearance extension: theme tokens.
+ *
+ * This file is intentionally loaded after the upstream design-tokens.css and
+ * app.css files. Keeping fork-owned color overrides here lets upstream evolve
+ * those files without repeatedly conflicting with the light-theme feature.
+ */
+
+:root {
+  --tn-light-bg:    #f4f6f8;
+  --tn-light-panel: #edf1f5;
+  --tn-light-fg:    #344054;
+
+  --accent-contrast: #0b0f1a;
+  --terminal-bg:     #0b0f1a;
+  --terminal-fg:     #c0caf5;
+  --logo-bg:         #1a1b26;
+  --logo-line:       #414868;
+  --hover-bg:        rgba(255, 255, 255, 0.025);
+  --subtle-bg:       rgba(255, 255, 255, 0.02);
+  --switch-track:    rgba(255, 255, 255, 0.10);
+  --indicator-muted: rgba(255, 255, 255, 0.14);
+  --overlay-bg:      rgba(0, 0, 0, 0.50);
+  --fatal-bg:        rgba(22, 22, 30, 0.96);
+}
+
+:root[data-theme="light"],
+:root.light {
+  --bg:        var(--tn-light-bg);
+  --panel:     var(--tn-light-panel);
+  --panel-2:   #e7ebf0;
+  --card:      #ffffff;
+  --card-hi:   #f7f9fb;
+  --border:    rgba(52, 64, 84, 0.16);
+  --border-hi: rgba(52, 64, 84, 0.30);
+
+  --text:     var(--tn-light-fg);
+  --text-hi:  #101828;
+  --text-dim: #475467;
+  --muted:    #667085;
+  --muted-2:  #98a2b3;
+
+  /* Tokyo Night's pastel hues lose contrast on white. These values keep the
+   * semantic identity while meeting the light surface with stronger contrast. */
+  --tn-blue:   #2959aa;
+  --tn-cyan:   #087e8b;
+  --tn-green:  #147d64;
+  --tn-lime:   #4f7a18;
+  --tn-yellow: #9a6700;
+  --tn-red:    #c73650;
+  --tn-purple: #7759b8;
+  --tn-orange: #b45309;
+
+  --accent-contrast: #ffffff;
+  --terminal-bg:     #ffffff;
+  --terminal-fg:     #263043;
+  --logo-bg:         #ffffff;
+  --logo-line:       #c7cdd7;
+  --hover-bg:        rgba(41, 89, 170, 0.055);
+  --subtle-bg:       rgba(52, 64, 84, 0.035);
+  --switch-track:    rgba(52, 64, 84, 0.14);
+  --indicator-muted: rgba(52, 64, 84, 0.20);
+  --overlay-bg:      rgba(16, 24, 40, 0.28);
+  --fatal-bg:        rgba(255, 255, 255, 0.97);
+
+  --shadow-1:     0 14px 32px -14px rgba(16, 24, 40, 0.24);
+  --shadow-2:     0 18px 42px -18px rgba(16, 24, 40, 0.26);
+  --shadow-3:     0 20px 50px -22px rgba(16, 24, 40, 0.28);
+  --shadow-4:     0 24px 54px -24px rgba(16, 24, 40, 0.30);
+  --shadow-5:     0 30px 70px -28px rgba(16, 24, 40, 0.32);
+  --shadow-modal: 0 30px 70px -28px rgba(16, 24, 40, 0.32), 0 0 0 1px var(--accent-soft);
+
+  --glow-running: 0 0 5px rgba(20, 125, 100, 0.40);
+  --glow-waiting: 0 0 5px rgba(154, 103, 0, 0.40);
+  --glow-error:   0 0 5px rgba(199, 54, 80, 0.40);
+}
+
+/* The upstream light block forces blue after the generic accent selectors.
+ * Rebind both the color and translucent companion at higher specificity. */
+:root[data-theme="light"][data-accent="blue"] {
+  --accent: var(--tn-blue);
+  --accent-soft: rgba(41, 89, 170, 0.12);
+}
+
+:root[data-theme="light"][data-accent="amber"] {
+  --accent: var(--tn-yellow);
+  --accent-soft: rgba(154, 103, 0, 0.12);
+}
+
+:root[data-theme="light"][data-accent="green"] {
+  --accent: var(--tn-green);
+  --accent-soft: rgba(20, 125, 100, 0.12);
+}
+
+:root[data-theme="light"][data-accent="purple"] {
+  --accent: var(--tn-purple);
+  --accent-soft: rgba(119, 89, 184, 0.12);
+}
