@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"os/exec"
 	"strings"
 	"sync"
 	"testing"
@@ -233,4 +234,86 @@ func TestIssue1397_HeadlessConcurrentMutationsNoRace(t *testing.T) {
 	if created != groups {
 		t.Errorf("expected all %d concurrent groups to persist, got %d", groups, created)
 	}
+}
+
+// TestHeadlessWebLifecyclePersistsRuntimeState guards the storage-backed web
+// path used by Agent Deck Studio. A restart may recreate tmux with a fresh
+// random name; that name, as well as subsequent stop/start status changes,
+// must be persisted before the next storage-backed menu/terminal lookup.
+func TestHeadlessWebLifecyclePersistsRuntimeState(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("tmux not installed")
+	}
+
+	profile := fmt.Sprintf("_test_web_lifecycle_%d", time.Now().UnixNano())
+	h, storage := newHeadlessHomeForTest(t, profile)
+
+	inst := session.NewInstanceWithTool("web-lifecycle", "/tmp", "shell")
+	inst.Command = "sleep 60"
+	inst.Status = session.StatusStopped
+	instances := []*session.Instance{inst}
+	if err := storage.SaveWithGroups(instances, session.NewGroupTree(instances)); err != nil {
+		t.Fatalf("seed SaveWithGroups: %v", err)
+	}
+	oldTmuxName := inst.GetTmuxSession().Name
+
+	m := NewWebMutator(h)
+	if err := m.RestartSession(inst.ID); err != nil {
+		t.Fatalf("RestartSession: %v", err)
+	}
+
+	h.instancesMu.RLock()
+	live := h.instanceByID[inst.ID]
+	h.instancesMu.RUnlock()
+	if live == nil || live.GetTmuxSession() == nil {
+		t.Fatal("restarted session missing from hydrated Home")
+	}
+	t.Cleanup(func() { _ = live.Kill() })
+
+	newTmuxName := live.GetTmuxSession().Name
+	if newTmuxName == oldTmuxName {
+		t.Fatalf("restart of missing tmux did not recreate its name: %q", oldTmuxName)
+	}
+
+	reloaded := loadPersistedInstanceForTest(t, storage, inst.ID)
+	if got := reloaded.GetTmuxSession().Name; got != newTmuxName {
+		t.Fatalf("persisted tmux name = %q, want live name %q", got, newTmuxName)
+	}
+	if reloaded.Status == session.StatusStopped || reloaded.Status == session.StatusError {
+		t.Fatalf("persisted restart status = %q, want active status", reloaded.Status)
+	}
+
+	if err := m.StopSession(inst.ID); err != nil {
+		t.Fatalf("StopSession: %v", err)
+	}
+	reloaded = loadPersistedInstanceForTest(t, storage, inst.ID)
+	if reloaded.Status != session.StatusStopped {
+		t.Fatalf("persisted stop status = %q, want %q", reloaded.Status, session.StatusStopped)
+	}
+
+	if err := m.StartSession(inst.ID); err != nil {
+		t.Fatalf("StartSession: %v", err)
+	}
+	reloaded = loadPersistedInstanceForTest(t, storage, inst.ID)
+	if got := reloaded.GetTmuxSession().Name; got != newTmuxName {
+		t.Fatalf("persisted start tmux name = %q, want %q", got, newTmuxName)
+	}
+	if reloaded.Status == session.StatusStopped || reloaded.Status == session.StatusError {
+		t.Fatalf("persisted start status = %q, want active status", reloaded.Status)
+	}
+}
+
+func loadPersistedInstanceForTest(t *testing.T, storage *session.Storage, id string) *session.Instance {
+	t.Helper()
+	instances, _, err := storage.LoadWithGroups()
+	if err != nil {
+		t.Fatalf("LoadWithGroups: %v", err)
+	}
+	for _, inst := range instances {
+		if inst.ID == id {
+			return inst
+		}
+	}
+	t.Fatalf("persisted session not found: %s", id)
+	return nil
 }

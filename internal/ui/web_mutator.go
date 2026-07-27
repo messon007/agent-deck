@@ -149,7 +149,10 @@ func (m *WebMutator) StartSession(id string) error {
 	if inst == nil {
 		return fmt.Errorf("session not found: %s", id)
 	}
-	return inst.Start()
+	if err := inst.Start(); err != nil {
+		return err
+	}
+	return m.persistAllInstances()
 }
 
 // StopSession kills (stops) a running session by ID.
@@ -165,7 +168,10 @@ func (m *WebMutator) StopSession(id string) error {
 	if inst == nil {
 		return fmt.Errorf("session not found: %s", id)
 	}
-	return inst.Kill()
+	if err := inst.Kill(); err != nil {
+		return err
+	}
+	return m.persistAllInstances()
 }
 
 // RestartSession restarts a session by ID.
@@ -181,7 +187,10 @@ func (m *WebMutator) RestartSession(id string) error {
 	if inst == nil {
 		return fmt.Errorf("session not found: %s", id)
 	}
-	return inst.Restart()
+	if err := inst.Restart(); err != nil {
+		return err
+	}
+	return m.persistAllInstances()
 }
 
 // DeleteSession kills a session and removes it from persistent storage.
