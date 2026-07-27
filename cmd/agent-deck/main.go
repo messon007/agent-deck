@@ -767,7 +767,7 @@ func main() {
 	if webEnabled {
 		effectiveProfile := session.GetEffectiveProfile(profile)
 		fallbackMenuData := web.NewSessionDataService(effectiveProfile)
-		liveMenuData := web.NewMemoryMenuData(fallbackMenuData)
+		menuData, liveMenuData := selectWebMenuData(webHeadless, fallbackMenuData)
 		homeModel.SetWebMenuData(liveMenuData)
 
 		// #1397: in headless mode no bubbletea loop ever populates the Home's
@@ -779,7 +779,7 @@ func main() {
 			homeModel.SetHeadless(true)
 		}
 
-		server, err := buildWebServer(effectiveProfile, webArgs, liveMenuData, ui.NewWebMutator(homeModel))
+		server, err := buildWebServer(effectiveProfile, webArgs, menuData, ui.NewWebMutator(homeModel))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: web server setup failed: %v\n", err)
 			os.Exit(1)
@@ -790,9 +790,9 @@ func main() {
 
 		if webHeadless {
 			// Headless: block on server.Start() and skip bubbletea. The
-			// HTTP server uses SessionDataService (storage-backed) as a
-			// fallback when MemoryMenuData has no snapshot, so the web UI
-			// reads live data from storage on each request.
+			// HTTP server uses SessionDataService directly, so the web UI
+			// reads live data from storage on each request and also observes
+			// changes made by separate agent-deck CLI processes.
 			fmt.Println("Headless mode: TUI disabled")
 			fmt.Printf("Web server: http://%s\n", server.Addr())
 			defer func() {

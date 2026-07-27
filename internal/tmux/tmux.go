@@ -2817,7 +2817,16 @@ func (s *Session) RespawnPane(command string) error {
 				slog.String("session", s.Name),
 				slog.String("error", err.Error()),
 			)
+			if !s.Exists() || s.IsPaneDead() {
+				return fmt.Errorf("respawned command exited before terminal became ready: %w", err)
+			}
 		}
+	}
+
+	// tmux accepting respawn-pane only proves that the spawn request was valid;
+	// a missing executable can still make the new process exit immediately.
+	if !s.Exists() || s.IsPaneDead() {
+		return fmt.Errorf("respawned command exited before terminal became ready")
 	}
 
 	// Reset startup/status trackers so GetStatus can classify the fresh process correctly.
@@ -2841,11 +2850,14 @@ func wrapRespawnCommandWithResolver(command string, lookPath func(string) (strin
 	if err != nil {
 		return "", fmt.Errorf("bash not found in PATH: %w", err)
 	}
-	return buildBashLCCommand(bashPath, command), nil
+	return buildBashCommand(bashPath, command), nil
 }
 
-func buildBashLCCommand(bashPath, command string) string {
-	return fmt.Sprintf("%s -lc %s", bashPath, shellescape.Quote(command))
+// buildBashCommand uses a non-login shell, matching the initial tmux Start
+// path. Login startup files may replace PATH and hide NVM/FNM-installed tools,
+// causing Restart to fail even though the initial Start succeeded.
+func buildBashCommand(bashPath, command string) string {
+	return fmt.Sprintf("%s -c %s", shellescape.Quote(bashPath), shellescape.Quote(command))
 }
 
 // GetWindowActivity returns Unix timestamp of last tmux window activity

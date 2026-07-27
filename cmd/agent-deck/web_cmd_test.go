@@ -14,6 +14,16 @@ import (
 // only used to verify that buildWebServer wires whatever is passed in.
 type noopMutator struct{}
 
+type countingMenuLoader struct {
+	calls    int
+	snapshot *web.MenuSnapshot
+}
+
+func (l *countingMenuLoader) LoadMenuSnapshot() (*web.MenuSnapshot, error) {
+	l.calls++
+	return l.snapshot, nil
+}
+
 func (noopMutator) CreateSession(string, string, string, string, string) (string, error) {
 	return "", nil
 }
@@ -42,6 +52,43 @@ func (noopMutator) FinishWorktree(string, web.WorktreeFinishOptions) (web.Worktr
 // web.SessionMutator. Catches accidental signature drift between the two
 // packages — the kind of break that would otherwise only surface at runtime.
 var _ web.SessionMutator = (*ui.WebMutator)(nil)
+
+func TestSelectWebMenuData_HeadlessKeepsStorageLive(t *testing.T) {
+	loader := &countingMenuLoader{snapshot: &web.MenuSnapshot{TotalSessions: 1}}
+	menuData, liveMenuData := selectWebMenuData(true, loader)
+	if liveMenuData != nil {
+		t.Fatal("headless mode must not expose an in-memory TUI snapshot sink")
+	}
+
+	first, err := menuData.LoadMenuSnapshot()
+	if err != nil {
+		t.Fatalf("first LoadMenuSnapshot: %v", err)
+	}
+	if first.TotalSessions != 1 {
+		t.Fatalf("first totalSessions = %d, want 1", first.TotalSessions)
+	}
+
+	// Simulate `agent-deck add` writing a new session from another process.
+	loader.snapshot = &web.MenuSnapshot{TotalSessions: 2}
+	second, err := menuData.LoadMenuSnapshot()
+	if err != nil {
+		t.Fatalf("second LoadMenuSnapshot: %v", err)
+	}
+	if second.TotalSessions != 2 {
+		t.Fatalf("second totalSessions = %d, want 2", second.TotalSessions)
+	}
+	if loader.calls != 2 {
+		t.Fatalf("storage loader calls = %d, want 2", loader.calls)
+	}
+}
+
+func TestSelectWebMenuData_TUIUsesPublishedSnapshotStore(t *testing.T) {
+	loader := &countingMenuLoader{snapshot: &web.MenuSnapshot{TotalSessions: 1}}
+	menuData, liveMenuData := selectWebMenuData(false, loader)
+	if liveMenuData == nil || menuData != liveMenuData {
+		t.Fatal("TUI mode must use one shared in-memory menu store")
+	}
+}
 
 // withTempHomeAndConfig is the same fixture used by internal/session tests:
 // point HOME at a temp dir, optionally write config.toml, and clear the
